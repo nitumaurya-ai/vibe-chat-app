@@ -1,0 +1,1905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Vynzo - Modern WhatsApp Web</title>
+  <!-- Custom Vynzo Branded SVG Favicon matching the emerald green app theme -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='vynzoGrad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2334d399'/%3E%3Cstop offset='50%25' stop-color='%2322c55e'/%3E%3Cstop offset='100%25' stop-color='%23128c7e'/%3E%3C/linearGradient%3E%3Cfilter id='glow' x='-20%25' y='-20%25' width='140%25' height='140%25'%3E%3CfeDropShadow dx='0' dy='3' stdDeviation='3' flood-color='%23128c7e' flood-opacity='0.4'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='64' height='64' rx='18' fill='url(%23vynzoGrad)' filter='url(%23glow)'/%3E%3Cpath d='M32 14c-9.94 0-18 7.55-18 16.86 0 3.32 1.05 6.42 2.89 9.03L15 48l8.6-2.67c2.51 1.45 5.37 2.25 8.4 2.25 9.94 0 18-7.55 18-16.86S41.94 14 32 14z' fill='%23ffffff' fill-opacity='0.22'/%3E%3Cpath d='M32 16c-8.84 0-16 6.72-16 15 0 2.95.93 5.71 2.57 8.03L16 46l7.35-2.28c2.45 1.42 5.09 2.16 8.65 2.16 8.84 0 16-6.72 16-15s-7.16-15-16-15z' fill='%23ffffff'/%3E%3Ccircle cx='24' cy='31' r='2.8' fill='%2316a34a'/%3E%3Ccircle cx='32' cy='31' r='2.8' fill='%2316a34a'/%3E%3Ccircle cx='40' cy='31' r='2.8' fill='%2316a34a'/%3E%3C/svg%3E">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            wa: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              200: '#bbf7d0',
+              300: '#86efac',
+              400: '#4ade80',
+              500: '#22c55e',
+              primary: '#25D366',
+              dark: '#1eb857',
+              deep: '#128C7E',
+              sidebar: '#22c55e',
+              chatBg: '#f8fafc',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    .status-ring {
+      background: linear-gradient(135deg, #22c55e, #10b981, #34d399);
+      padding: 2.5px;
+    }
+    .status-ring-seen {
+      background: #cbd5e1;
+      padding: 2.5px;
+    }
+    .custom-shadow-card {
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+    }
+    .custom-shadow-app {
+      box-shadow: 0 25px 60px -15px rgba(16, 24, 40, 0.12), 0 0 1px 1px rgba(0,0,0,0.03);
+    }
+    @keyframes pulseSoft {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.06); opacity: 0.85; }
+    }
+    .animate-pulse-soft {
+      animation: pulseSoft 2s infinite ease-in-out;
+    }
+    @keyframes soundWave {
+      0%, 100% { height: 6px; }
+      50% { height: 22px; }
+    }
+    .wave-bar {
+      animation: soundWave 1.2s ease-in-out infinite;
+    }
+    /* Touch optimization */
+    .touch-callout-none {
+      -webkit-touch-callout: none;
+    }
+    /* Hide scrollbars on mobile status row for clean look */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-[#e9edf0] text-slate-800 font-sans h-screen p-0 md:p-3 lg:p-6 flex items-center justify-center overflow-hidden antialiased select-none touch-callout-none">
+
+  <!-- Main Rounded Shell matching the Dribbble design (Full viewport on mobile, floating rounded card on md+) -->
+  <div id="vynzoAppShell" class="w-full h-full max-w-[1580px] bg-white md:rounded-[32px] custom-shadow-app overflow-hidden flex flex-col md:flex-row md:border border-slate-200/60 relative">
+
+    <!-- ========================================== -->
+    <!-- 1. GREEN VERTICAL ICON SIDEBAR / MOBILE NAV -->
+    <!-- ========================================== -->
+    <!-- On desktop: Left vertical sidebar. On mobile: Bottom floating navigation bar -->
+    <aside id="mainNavRail" class="order-3 md:order-1 w-full md:w-16 lg:w-20 bg-wa-sidebar flex flex-row md:flex-col items-center justify-around md:justify-between py-2.5 md:py-6 px-3 md:px-0 text-white shrink-0 relative z-30 shadow-lg md:shadow-md transition-all">
+      
+      <!-- Top Brand Logo (Hidden on mobile bottom bar to preserve space) -->
+      <div class="hidden md:flex flex-col items-center gap-6">
+        <div class="cursor-pointer group flex flex-col items-center" onclick="window.switchMainTab('chats')">
+          <div class="w-11 h-11 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-inner group-hover:scale-105 transition">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+          </div>
+          <span class="text-[10px] font-bold mt-1 tracking-wider opacity-90">vynzo</span>
+        </div>
+      </div>
+
+      <!-- Navigation Actions (Horizontal flex on mobile, vertical flex on md+) -->
+      <nav class="flex flex-row md:flex-col items-center justify-around w-full md:w-auto gap-1 md:gap-4">
+        <!-- Chats Icon (Active state with vertical/horizontal indicator) -->
+        <button id="navChatIconBtn" onclick="window.switchMainTab('chats')" title="Chats" class="w-10 h-10 md:w-11 md:h-11 rounded-2xl bg-white/20 text-white flex items-center justify-center shadow-sm relative transition active:scale-95">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+          </svg>
+          <!-- Active indicator pill -->
+          <span id="navActivePill" class="hidden md:block absolute -right-2 w-1.5 h-6 bg-white rounded-l-full shadow"></span>
+          <span id="navActivePillMobile" class="md:hidden absolute -top-1 w-5 h-1 bg-white rounded-full shadow"></span>
+        </button>
+
+        <!-- Calls Icon -->
+        <button id="navCallsBtn" onclick="window.startCallModal('voice')" title="Voice & Video Calls" class="w-10 h-10 md:w-11 md:h-11 rounded-2xl flex items-center justify-center text-white/80 hover:text-white hover:bg-white/15 transition active:scale-95">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+          </svg>
+        </button>
+
+        <!-- Camera / Stories Icon -->
+        <button onclick="window.triggerAddStatusUpload()" title="Post New Status" class="w-10 h-10 md:w-11 md:h-11 rounded-2xl flex items-center justify-center text-white/80 hover:text-white hover:bg-white/15 transition active:scale-95">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </button>
+
+        <!-- Sync / Requests Switcher Icon -->
+        <button id="navRequestsIconBtn" onclick="window.switchMainTab('requests')" title="Chat Requests" class="w-10 h-10 md:w-11 md:h-11 rounded-2xl flex items-center justify-center text-white/80 hover:text-white hover:bg-white/15 transition relative active:scale-95">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+          </svg>
+          <!-- Requests Count Badge -->
+          <span id="railRequestBadge" class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white font-bold text-[10px] flex items-center justify-center shadow">2</span>
+        </button>
+
+        <!-- New Group Shortcut (Accessible on mobile too) -->
+        <button onclick="window.openCreateGroupModal()" title="Create Group" class="w-10 h-10 md:w-11 md:h-11 rounded-2xl flex items-center justify-center text-white/80 hover:text-white hover:bg-white/15 transition active:scale-95">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </button>
+
+        <!-- Profile Avatar on Mobile Bar -->
+        <div class="md:hidden relative cursor-pointer" onclick="window.openProfileModal()" title="My Profile Settings">
+          <img id="mobileRailAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80" alt="Avatar" class="w-8 h-8 rounded-full object-cover ring-2 ring-white/60">
+          <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-300 border-2 border-wa-sidebar rounded-full"></span>
+        </div>
+      </nav>
+
+      <!-- Bottom Profile Avatar & Quick Tools (Desktop only) -->
+      <div class="hidden md:flex flex-col items-center gap-3">
+        <button onclick="window.openCreateGroupModal()" title="Create Multi-Person Group" class="w-10 h-10 rounded-xl bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition active:scale-95">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        </button>
+        <div class="relative cursor-pointer group" onclick="window.openProfileModal()" title="My Profile Settings">
+          <img id="railMyAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80" alt="Avatar" class="w-10 h-10 rounded-2xl object-cover ring-2 ring-white/60">
+          <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-300 border-2 border-wa-sidebar rounded-full"></span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ========================================== -->
+    <!-- 2. CHATS LIST SIDEBAR (RESPONSIVE PANE)     -->
+    <!-- ========================================== -->
+    <!-- Controlled by mobileNavState: On mobile, visible when on 'list' view, hidden when inside a chat -->
+    <section id="sidebarPane" class="order-2 w-full md:w-80 lg:w-96 bg-[#fbfcfc] md:border-r border-slate-200/80 flex flex-col shrink-0 z-20 h-full overflow-hidden transition-all duration-200">
+      
+      <!-- Top Title Bar -->
+      <div class="p-4 sm:p-6 pb-3 sm:pb-4 flex items-center justify-between">
+        <div class="flex items-center gap-2.5 sm:gap-3">
+          <div class="md:hidden w-8 h-8 rounded-xl bg-wa-sidebar flex items-center justify-center text-white shadow-sm mr-0.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+          </div>
+          <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">Chats</h1>
+          <span id="totalUnreadPill" class="text-[11px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-wa-100 text-wa-primary border border-wa-400/40">3 new</span>
+        </div>
+
+        <!-- Simulation quick actions for live number badges -->
+        <div class="flex items-center gap-1.5">
+          <button onclick="window.simulateIncomingMessage()" title="Simulate incoming message with number badge" class="p-2 rounded-xl text-slate-500 hover:text-wa-primary hover:bg-wa-50 transition border border-slate-200 active:scale-95" id="btnSimulateMsg">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          </button>
+          <button onclick="window.openCreateGroupModal()" title="Create Multi-Person Group" class="p-2 rounded-xl text-slate-500 hover:text-wa-primary hover:bg-wa-50 transition border border-slate-200 active:scale-95">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Search or start new chat input matching screenshot -->
+      <div class="px-4 sm:px-6 mb-3">
+        <div class="relative flex items-center">
+          <svg class="w-4 h-4 text-slate-400 absolute left-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input 
+            type="text" 
+            id="searchInput" 
+            oninput="window.handleSearchConversations(this.value)" 
+            placeholder="Search or start new chat" 
+            class="w-full bg-[#f1f4f6] text-slate-800 text-xs font-medium pl-11 pr-4 py-2.5 sm:py-3 rounded-2xl border-none focus:outline-none focus:ring-2 focus:ring-wa-primary/40 placeholder-slate-400 transition"
+          >
+        </div>
+      </div>
+
+      <!-- Navigation pill tabs (Chats / Requests) -->
+      <div class="px-4 sm:px-6 mb-2 flex items-center gap-2">
+        <button id="pillBtnChats" onclick="window.switchMainTab('chats')" class="flex-1 py-1.5 rounded-xl text-xs font-bold bg-wa-100 text-wa-dark flex items-center justify-center gap-1.5 transition">
+          <span>Messages</span>
+          <span id="tabUnreadCount" class="px-1.5 py-0.2 rounded-full bg-wa-primary text-white text-[10px]">3</span>
+        </button>
+        <button id="pillBtnRequests" onclick="window.switchMainTab('requests')" class="flex-1 py-1.5 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 flex items-center justify-center gap-1.5 transition">
+          <span>Requests</span>
+          <span id="tabRequestsCount" class="px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[10px]">2</span>
+        </button>
+      </div>
+
+      <!-- Conversation List with distinct rounded pill cards -->
+      <div id="conversationsContainer" class="flex-1 overflow-y-auto px-3 sm:px-4 py-2 space-y-2">
+        <!-- Rendered via JavaScript -->
+      </div>
+
+      <!-- Current Profile Footer Pill -->
+      <div class="p-3 sm:p-4 mx-3 sm:mx-4 mb-3 sm:mb-4 rounded-2xl bg-[#f1f5f9]/80 border border-slate-200/60 flex items-center justify-between">
+        <div class="flex items-center gap-2.5 min-w-0 cursor-pointer" onclick="window.openProfileModal()">
+          <img id="currentLoggedAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80" alt="" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover">
+          <div class="min-w-0">
+            <h4 id="currentLoggedName" class="text-xs font-bold text-slate-900 truncate">Nitu Maurya</h4>
+            <p class="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>Online • Vynzo</span>
+            </p>
+          </div>
+        </div>
+        <button onclick="window.switchUserAccountToggle()" title="Switch active account" class="text-[11px] font-bold text-wa-deep hover:underline px-2 py-1 rounded-lg hover:bg-white transition active:scale-95">
+          Switch
+        </button>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- 3. MAIN CHAT & STATUS STORIES AREA         -->
+    <!-- ========================================== -->
+    <main id="chatMainPane" class="order-1 md:order-2 flex-1 flex flex-col bg-white overflow-hidden relative h-full">
+
+      <!-- TOP HORIZONTAL STATUS / STORIES CAROUSEL -->
+      <div class="px-4 sm:px-8 pt-3 sm:pt-5 pb-2.5 sm:pb-3 border-b border-slate-100 shrink-0">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <h2 class="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight">Status</h2>
+            <span class="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-wa-dark border border-emerald-100">Live</span>
+          </div>
+          <button onclick="window.triggerAddStatusUpload()" class="text-xs font-bold text-wa-dark hover:underline flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+            <span class="hidden sm:inline">Update status</span>
+            <span class="sm:hidden">Add</span>
+          </button>
+        </div>
+
+        <!-- Avatars Row with Green Circles (Horizontally swipeable on mobile) -->
+        <div class="flex items-center gap-3 sm:gap-3.5 overflow-x-auto pb-1 no-scrollbar" id="statusAvatarRow">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+
+      <!-- In-Chat Search Bar Drawer (Toggled via search button) -->
+      <div id="inChatSearchBar" class="hidden px-4 sm:px-8 py-2.5 bg-slate-50 border-b border-slate-200/70 flex items-center justify-between transition-all">
+        <div class="flex items-center gap-2 flex-1 max-w-md">
+          <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input type="text" id="chatSearchInput" oninput="window.filterMessagesInChat(this.value)" placeholder="Search text in this chat..." class="w-full bg-white px-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-1 focus:ring-wa-primary">
+        </div>
+        <button onclick="window.toggleInChatSearch()" class="text-xs font-bold text-slate-500 hover:text-slate-800 ml-3">Close</button>
+      </div>
+
+      <!-- ACTIVE CHAT CONVERSATION HEADER -->
+      <div id="activeChatHeader" class="px-4 sm:px-8 py-3 sm:py-3.5 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
+        <!-- Rendered based on selected conversation -->
+      </div>
+
+      <!-- MESSAGES FEED AREA (WhatsApp Emerald Green + Grey rounded bubbles) -->
+      <div id="messagesFeedContainer" class="flex-1 overflow-y-auto px-4 sm:px-8 py-4 sm:py-6 space-y-3.5 sm:space-y-4 bg-[#ffffff] relative">
+        <!-- Rendered via JavaScript -->
+      </div>
+
+      <!-- FLOATING SCROLL DOWN BUTTON -->
+      <div id="scrollBottomBtn" onclick="window.scrollToLatestMessage()" class="absolute bottom-20 sm:bottom-24 right-4 sm:right-10 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition cursor-pointer z-20">
+        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+      </div>
+
+      <!-- AUDIO RECORDING ACTIVE RIBBON -->
+      <div id="voiceRecordingRibbon" class="hidden px-4 sm:px-8 py-2.5 sm:py-3 bg-emerald-50 border-t border-emerald-200/80 flex items-center justify-between">
+        <div class="flex items-center gap-2 sm:gap-3">
+          <span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-rose-500 animate-ping"></span>
+          <span class="text-[11px] sm:text-xs font-bold text-slate-800">Recording voice note...</span>
+          <span id="recordingTimer" class="text-xs font-mono font-bold text-emerald-700">0:00</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="window.cancelVoiceRecording()" class="px-2.5 sm:px-3 py-1 text-xs font-bold text-rose-600 hover:bg-rose-100/60 rounded-xl transition">Cancel</button>
+          <button onclick="window.finishAndSendVoiceRecording()" class="px-3 sm:px-4 py-1 text-xs font-bold text-white bg-wa-sidebar hover:bg-wa-dark rounded-xl shadow transition">Send</button>
+        </div>
+      </div>
+
+      <!-- BOTTOM COMPOSER BAR -->
+      <footer id="chatComposerBar" class="px-3 sm:px-8 py-2.5 sm:py-4 bg-white border-t border-slate-100 shrink-0">
+        <form onsubmit="window.handleSendChatMessage(event)" class="flex items-center gap-2 sm:gap-3">
+          
+          <!-- Attachment Button -->
+          <label title="Send Document or Image" class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-slate-100 hover:bg-wa-50 text-slate-500 hover:text-wa-primary flex items-center justify-center cursor-pointer transition active:scale-95 shrink-0">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+            <input type="file" id="generalFileInput" onchange="window.handleSendFileAttachment(event)" class="hidden">
+          </label>
+
+          <!-- Audio Voice Note Button (Live Record) -->
+          <button type="button" onclick="window.startLiveVoiceRecording()" title="Record Audio Voice Note" class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-slate-100 hover:bg-wa-50 text-slate-500 hover:text-wa-primary flex items-center justify-center transition active:scale-95 shrink-0">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+          </button>
+
+          <!-- Input Field with Rounded Edges -->
+          <div class="flex-1 relative min-w-0">
+            <input 
+              type="text" 
+              id="chatMessageInput" 
+              placeholder="Type a message" 
+              autocomplete="off" 
+              class="w-full bg-[#f1f4f6] text-slate-800 text-xs sm:text-sm font-medium pl-3.5 sm:pl-5 pr-10 sm:pr-12 py-2.5 sm:py-3 rounded-2xl border-none focus:outline-none focus:ring-2 focus:ring-wa-primary/40 placeholder-slate-400 transition"
+            >
+            <button type="button" onclick="window.toggleEmojiMenu()" class="absolute right-3 sm:right-4 top-2 sm:top-2.5 text-slate-400 hover:text-slate-600 text-base sm:text-lg">
+              😊
+            </button>
+
+            <!-- Quick Emoji Popup -->
+            <div id="quickEmojiPopup" class="hidden absolute right-0 bottom-12 sm:bottom-14 bg-white p-2 sm:p-2.5 rounded-2xl shadow-xl border border-slate-100 flex items-center gap-1.5 sm:gap-2 z-30">
+              <button type="button" onclick="window.insertEmoji('😊')" class="text-lg sm:text-xl hover:scale-125 transition">😊</button>
+              <button type="button" onclick="window.insertEmoji('😂')" class="text-lg sm:text-xl hover:scale-125 transition">😂</button>
+              <button type="button" onclick="window.insertEmoji('👍')" class="text-lg sm:text-xl hover:scale-125 transition">👍</button>
+              <button type="button" onclick="window.insertEmoji('❤️')" class="text-lg sm:text-xl hover:scale-125 transition">❤️</button>
+              <button type="button" onclick="window.insertEmoji('🎉')" class="text-lg sm:text-xl hover:scale-125 transition">🎉</button>
+              <button type="button" onclick="window.insertEmoji('🔥')" class="text-lg sm:text-xl hover:scale-125 transition">🔥</button>
+            </div>
+          </div>
+
+          <!-- Send Message Button -->
+          <button type="submit" class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-wa-sidebar hover:bg-wa-dark text-white flex items-center justify-center shadow-lg shadow-wa-primary/25 hover:scale-105 active:scale-95 transition shrink-0">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 transform rotate-45 -translate-x-0.5 translate-y-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
+            </svg>
+          </button>
+
+        </form>
+      </footer>
+
+    </main>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: LIVE CALL SIMULATION (VOICE / VIDEO)-->
+  <!-- ========================================== -->
+  <div id="liveCallModal" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="relative w-full max-w-sm bg-slate-900 rounded-[36px] overflow-hidden flex flex-col justify-between p-6 text-white shadow-2xl border border-white/10">
+      
+      <!-- Top info -->
+      <div class="flex items-center justify-between text-xs text-slate-400">
+        <span class="flex items-center gap-1.5 text-emerald-400 font-bold">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+          <span id="callTypeLabel">Voice Call</span>
+        </span>
+        <span id="callDuration" class="font-mono font-bold text-white">00:00</span>
+      </div>
+
+      <!-- Center Person Profile -->
+      <div class="flex flex-col items-center justify-center py-8">
+        <div class="relative mb-4">
+          <img id="callUserAvatar" src="" class="w-24 h-24 rounded-full object-cover ring-4 ring-wa-sidebar shadow-2xl">
+          <div id="callAudioWaves" class="flex items-center justify-center gap-1 mt-3 h-6">
+            <span class="w-1 bg-wa-sidebar rounded-full wave-bar" style="animation-delay: 0.1s"></span>
+            <span class="w-1 bg-wa-sidebar rounded-full wave-bar" style="animation-delay: 0.3s"></span>
+            <span class="w-1 bg-wa-sidebar rounded-full wave-bar" style="animation-delay: 0.2s"></span>
+            <span class="w-1 bg-wa-sidebar rounded-full wave-bar" style="animation-delay: 0.4s"></span>
+            <span class="w-1 bg-wa-sidebar rounded-full wave-bar" style="animation-delay: 0.15s"></span>
+          </div>
+        </div>
+        <h3 id="callUserName" class="text-lg font-extrabold text-white">Contact</h3>
+        <p id="callSubstatus" class="text-xs text-slate-400 mt-1 font-medium">Connected • End-to-End Encrypted</p>
+      </div>
+
+      <!-- Control actions -->
+      <div class="flex items-center justify-center gap-4 pt-4 border-t border-white/10">
+        <button id="callMuteBtn" onclick="window.toggleCallMute()" class="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+        </button>
+        <button onclick="window.endActiveCall()" class="w-14 h-14 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center shadow-lg shadow-rose-600/40 hover:scale-105 transition">
+          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08c-.18-.17-.29-.42-.29-.7 0-.28.11-.53.29-.71C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.1-.7-.28-.79-.74-1.69-1.36-2.67-1.85-.33-.16-.56-.5-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg>
+        </button>
+        <button id="callVideoToggleBtn" onclick="window.toggleCallVideo()" class="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: CREATE GROUP WITH MULTIPLE PEOPLE  -->
+  <!-- ========================================== -->
+  <div id="createGroupModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-wa-50/60">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-2xl bg-wa-sidebar text-white flex items-center justify-center shadow-sm">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-sm text-slate-900">Create Group Chat</h3>
+            <p class="text-[11px] text-slate-500">Select multiple people to add</p>
+          </div>
+        </div>
+        <button onclick="window.closeCreateGroupModal()" class="text-slate-400 hover:text-slate-700 p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Group Name</label>
+          <input type="text" id="groupNameInput" placeholder="e.g. We are Family 🖤, Tech Crew" class="w-full px-4 py-2.5 text-xs bg-slate-100 rounded-2xl border-none focus:outline-none focus:ring-2 focus:ring-wa-primary/40 font-medium">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Add Members</label>
+          <div id="groupMembersList" class="max-h-48 overflow-y-auto space-y-1 pr-1">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2.5">
+        <button onclick="window.closeCreateGroupModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-200 rounded-xl transition">Cancel</button>
+        <button onclick="window.submitCreateGroup()" class="px-5 py-2 text-xs font-bold text-white bg-wa-sidebar hover:bg-wa-dark rounded-xl shadow-lg shadow-wa-primary/25 transition">Create Group</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: ADD MEMBERS TO EXISTING CHAT        -->
+  <!-- ========================================== -->
+  <div id="addMemberToChatModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-wa-50">
+        <h3 class="font-bold text-sm text-slate-900">Add People to Conversation</h3>
+        <button onclick="window.closeAddMemberModal()" class="text-slate-400 hover:text-slate-700">✕</button>
+      </div>
+      <div class="p-5 space-y-3">
+        <p class="text-xs text-slate-500">Select people from contacts to add to this chat:</p>
+        <div id="availableMembersToAddList" class="max-h-44 overflow-y-auto space-y-1">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+      <div class="p-4 bg-slate-50 flex justify-end gap-2">
+        <button onclick="window.closeAddMemberModal()" class="px-3 py-1.5 text-xs font-bold text-slate-600">Cancel</button>
+        <button onclick="window.confirmAddMembersToCurrentChat()" class="px-4 py-1.5 text-xs font-bold text-white bg-wa-sidebar hover:bg-wa-dark rounded-xl transition">Add Selected</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: POST NEW STATUS / STORY             -->
+  <!-- ========================================== -->
+  <div id="addStatusModal" class="hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-3xl shadow-2xl p-6 text-slate-800">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-extrabold text-sm text-slate-900">Post New Status</h3>
+        <button onclick="window.closeAddStatusModal()" class="text-slate-400 hover:text-slate-700">✕</button>
+      </div>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Status Photo URL</label>
+          <input type="text" id="statusPhotoUrlInput" placeholder="https://images.unsplash.com/..." value="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80" class="w-full text-xs px-3 py-2 bg-slate-100 rounded-xl border-none focus:ring-1 focus:ring-wa-primary">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Caption</label>
+          <input type="text" id="statusCaptionInput" placeholder="Write a short update..." value="Enjoying the sunny weekend! ☀️🌊" class="w-full text-xs px-3 py-2 bg-slate-100 rounded-xl border-none focus:ring-1 focus:ring-wa-primary">
+        </div>
+      </div>
+      <div class="mt-5 flex justify-end gap-2">
+        <button onclick="window.closeAddStatusModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl">Cancel</button>
+        <button onclick="window.submitNewStatus()" class="px-5 py-2 text-xs font-bold text-white bg-wa-sidebar hover:bg-wa-dark rounded-xl shadow">Share Status</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: STATUS STORY VIEWER                -->
+  <!-- ========================================== -->
+  <div id="statusViewerModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="relative w-full max-w-sm h-[560px] bg-slate-900 rounded-[32px] overflow-hidden flex flex-col justify-between p-5 text-white shadow-2xl border border-white/10">
+      
+      <!-- Story Progress Bars -->
+      <div class="w-full flex items-center gap-1.5 mb-3">
+        <div class="flex-1 h-1 bg-white/30 rounded-full overflow-hidden">
+          <div id="storyProgressFill" class="w-0 h-full bg-wa-primary transition-all duration-100"></div>
+        </div>
+      </div>
+
+      <!-- Top User Header -->
+      <div class="flex items-center justify-between z-10">
+        <div class="flex items-center gap-2.5">
+          <img id="storyUserAvatar" src="" class="w-10 h-10 rounded-full object-cover border-2 border-wa-primary">
+          <div>
+            <h4 id="storyUserName" class="text-xs font-bold">User</h4>
+            <span id="storyUserTime" class="text-[10px] text-white/70">Today at 13:45</span>
+          </div>
+        </div>
+        <button onclick="window.closeStatusViewer()" class="p-1 rounded-full bg-black/40 text-white/80 hover:text-white">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Center Story Media Image -->
+      <div class="flex-1 my-2 rounded-2xl overflow-hidden relative flex items-center justify-center bg-slate-800">
+        <img id="storyImageMedia" src="" class="w-full h-full object-cover">
+        <div class="absolute bottom-3 inset-x-3 bg-black/50 backdrop-blur-sm p-2.5 rounded-xl text-center">
+          <p id="storyCaptionText" class="text-xs font-medium text-white/95 leading-snug">"Living my best life in NYC! 🗽✨"</p>
+        </div>
+      </div>
+
+      <!-- Reply to Status Input -->
+      <div class="flex items-center gap-2 z-10">
+        <input type="text" id="statusReplyInput" placeholder="Reply to status..." class="flex-1 bg-white/20 backdrop-blur-md rounded-2xl px-4 py-2 text-xs text-white placeholder-white/60 border border-white/20 focus:outline-none focus:ring-1 focus:ring-wa-primary">
+        <button onclick="window.sendReplyToActiveStory()" class="p-2 rounded-xl bg-wa-sidebar text-white hover:bg-wa-dark transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: PROFILE & BIO SETTINGS             -->
+  <!-- ========================================== -->
+  <div id="userProfileModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-3xl shadow-2xl p-6 text-slate-800">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-extrabold text-sm text-slate-900">Profile Settings</h3>
+        <button onclick="window.closeProfileModal()" class="text-slate-400 hover:text-slate-700">✕</button>
+      </div>
+      <div class="flex flex-col items-center mb-4">
+        <img id="profileModalAvatar" src="" class="w-20 h-20 rounded-full object-cover ring-4 ring-wa-100 mb-2">
+        <span class="text-xs font-bold text-emerald-600 flex items-center gap-1">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Available on Vynzo
+        </span>
+      </div>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Full Name</label>
+          <input type="text" id="profileNameInput" class="w-full text-xs px-3 py-2 bg-slate-100 rounded-xl font-medium focus:ring-1 focus:ring-wa-primary">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Status / About</label>
+          <input type="text" id="profileAboutInput" class="w-full text-xs px-3 py-2 bg-slate-100 rounded-xl font-medium focus:ring-1 focus:ring-wa-primary">
+        </div>
+      </div>
+      <div class="mt-5 flex justify-end gap-2">
+        <button onclick="window.closeProfileModal()" class="px-4 py-2 text-xs font-bold text-slate-600">Cancel</button>
+        <button onclick="window.saveProfileDetails()" class="px-5 py-2 text-xs font-bold text-white bg-wa-sidebar hover:bg-wa-dark rounded-xl shadow">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION NOTIFIER -->
+  <div id="appToast" class="fixed bottom-6 right-6 z-50 transition-all duration-300 opacity-0 pointer-events-none transform translate-y-3 bg-slate-900 text-white text-xs px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-2.5">
+    <span class="w-2.5 h-2.5 rounded-full bg-wa-primary"></span>
+    <span id="appToastText" class="font-medium">Notification message</span>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- JAVASCRIPT STATE ENGINE                    -->
+  <!-- ========================================== -->
+  <script>
+    // Audio synthesizer for incoming alerts and ticks
+    function playChatChime(type = 'msg') {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        if (type === 'call') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(440, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3);
+          gain.gain.setValueAtTime(0.08, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.35);
+          return;
+        }
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(659.25, ctx.currentTime); // E5
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12); // A5
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.15);
+      } catch (e) {}
+    }
+
+    // Default registered users seed
+    const USERS_SEED = [
+      {
+        id: 'u_nitu',
+        name: 'Nitu Maurya',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80',
+        about: 'Hey there! I am using Vynzo Web.',
+        online: true,
+        lastSeen: new Date().toISOString()
+      },
+      {
+        id: 'u_paul',
+        name: 'Paul Davies',
+        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&auto=format&fit=crop&q=80',
+        about: 'Coffee & Code ☕',
+        online: true,
+        lastSeen: new Date().toISOString()
+      },
+      {
+        id: 'u_luis',
+        name: 'Luis Kolen',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80',
+        about: 'Exploring new horizons 🌍',
+        online: true,
+        lastSeen: new Date().toISOString()
+      },
+      {
+        id: 'u_mathilda',
+        name: 'Mathilda Bond',
+        avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&auto=format&fit=crop&q=80',
+        about: 'At work...',
+        online: false,
+        lastSeen: new Date(Date.now() - 45 * 60 * 1000).toISOString()
+      },
+      {
+        id: 'u_peter',
+        name: 'Peter Swensen',
+        avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=120&auto=format&fit=crop&q=80',
+        about: 'Available',
+        online: false,
+        lastSeen: new Date(Date.now() - 3 * 3600 * 1000).toISOString()
+      },
+      {
+        id: 'u_marry',
+        name: 'Marry Smith',
+        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&auto=format&fit=crop&q=80',
+        about: 'Design is intelligence made visible ✨',
+        online: true,
+        lastSeen: new Date().toISOString()
+      },
+      {
+        id: 'u_linda',
+        name: 'Linda Anderson',
+        avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=120&auto=format&fit=crop&q=80',
+        about: 'Busy with projects',
+        online: false,
+        lastSeen: new Date(Date.now() - 24 * 3600 * 1000).toISOString()
+      }
+    ];
+
+    // Status stories initial state
+    const INITIAL_STORIES = [
+      {
+        id: 'st_sarah',
+        userId: 'u_marry',
+        name: 'Sarah Jenkins',
+        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&auto=format&fit=crop&q=80',
+        image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80',
+        caption: 'Sunny morning at the beach! 🏖️🌊',
+        time: 'Today at 10:15',
+        viewed: false
+      },
+      {
+        id: 'st_luis',
+        userId: 'u_luis',
+        name: 'Luis Kolen',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80',
+        image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&auto=format&fit=crop&q=80',
+        caption: 'Dinner with the product team tonight! 🍕🥂',
+        time: 'Today at 12:40',
+        viewed: false
+      },
+      {
+        id: 'st_mathilda',
+        userId: 'u_mathilda',
+        name: 'Mathilda Bond',
+        avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&auto=format&fit=crop&q=80',
+        image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&auto=format&fit=crop&q=80',
+        caption: 'Healthy lunch bowls 🌱🥗',
+        time: 'Today at 13:05',
+        viewed: false
+      },
+      {
+        id: 'st_paul',
+        userId: 'u_paul',
+        name: 'Paul Davies',
+        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&auto=format&fit=crop&q=80',
+        image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=800&auto=format&fit=crop&q=80',
+        caption: 'Living my best life in NYC! 🗽✨',
+        time: 'Today at 13:45',
+        viewed: false
+      },
+      {
+        id: 'st_peter',
+        userId: 'u_peter',
+        name: 'Peter Swensen',
+        avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=120&auto=format&fit=crop&q=80',
+        image: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=800&auto=format&fit=crop&q=80',
+        caption: 'Late night studio sessions 🎧⚡',
+        time: 'Yesterday',
+        viewed: true
+      }
+    ];
+
+    // Seed conversations matching reference image
+    const INITIAL_CONVERSATIONS = [
+      {
+        id: 'conv_luis',
+        isGroup: false,
+        name: 'Luis Kolen',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80',
+        participantIds: ['u_nitu', 'u_luis'],
+        lastMessage: "I'm still thinking about it 😂",
+        time: '18:18',
+        unreadCount: 3,
+        status: 'delivered'
+      },
+      {
+        id: 'conv_paul',
+        isGroup: false,
+        name: 'Paul Davies',
+        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&auto=format&fit=crop&q=80',
+        participantIds: ['u_nitu', 'u_paul'],
+        lastMessage: 'Thanks, see u in a bar after work',
+        time: '15:45',
+        unreadCount: 0,
+        status: 'read'
+      },
+      {
+        id: 'conv_family',
+        isGroup: true,
+        name: 'We are Family 🖤',
+        avatar: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=120&auto=format&fit=crop&q=80',
+        participantIds: ['u_nitu', 'u_paul', 'u_luis', 'u_mathilda'],
+        lastMessage: 'Mathew: Who is at home?',
+        time: '14:53',
+        unreadCount: 21,
+        status: 'delivered'
+      },
+      {
+        id: 'conv_mathilda',
+        isGroup: false,
+        name: 'Mathilda Bond',
+        avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&auto=format&fit=crop&q=80',
+        participantIds: ['u_nitu', 'u_mathilda'],
+        lastMessage: 'Take care man, see you soon',
+        time: 'Yesterday',
+        unreadCount: 0,
+        status: 'read'
+      },
+      {
+        id: 'conv_peter',
+        isGroup: false,
+        name: 'Peter Swensen',
+        avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=120&auto=format&fit=crop&q=80',
+        participantIds: ['u_nitu', 'u_peter'],
+        lastMessage: 'Big up and take care man!',
+        time: 'Yesterday',
+        unreadCount: 0,
+        status: 'read'
+      },
+      {
+        id: 'conv_marry',
+        isGroup: false,
+        name: 'Marry Smith',
+        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&auto=format&fit=crop&q=80',
+        participantIds: ['u_nitu', 'u_marry'],
+        lastMessage: 'Last time, it was amazing, where did...',
+        time: '28 Sep',
+        unreadCount: 0,
+        status: 'read'
+      },
+      {
+        id: 'conv_linda',
+        isGroup: false,
+        name: 'Linda Anderson',
+        avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=120&auto=format&fit=crop&q=80',
+        participantIds: ['u_nitu', 'u_linda'],
+        lastMessage: 'Sure!',
+        time: '13 Oct',
+        unreadCount: 0,
+        status: 'read'
+      }
+    ];
+
+    // Seed Messages matching the screenshot dialogue
+    const INITIAL_MESSAGES = [
+      {
+        id: 'm1',
+        conversationId: 'conv_paul',
+        senderId: 'u_nitu',
+        text: 'Hi! I can not find a document for our partner. Did U see it? By the way, I saw Bill yesterday. He told me that U are going to New York next week',
+        type: 'text',
+        time: '15:38',
+        status: 'read'
+      },
+      {
+        id: 'm2',
+        conversationId: 'conv_paul',
+        senderId: 'u_paul',
+        text: "Hey man! Yes I'm going to NYC next Tuesday",
+        type: 'text',
+        time: '15:40',
+        status: 'read'
+      },
+      {
+        id: 'm3',
+        conversationId: 'conv_paul',
+        senderId: 'u_paul',
+        type: 'audio',
+        audioLength: '0:24',
+        time: '15:41',
+        status: 'read'
+      },
+      {
+        id: 'm4',
+        conversationId: 'conv_paul',
+        senderId: 'u_nitu',
+        text: 'Great! Let me see the document',
+        type: 'text',
+        time: '15:42',
+        status: 'read'
+      },
+      {
+        id: 'm5',
+        conversationId: 'conv_paul',
+        senderId: 'u_paul',
+        type: 'document',
+        docTitle: 'WD-Document-58373737.pdf',
+        time: '15:43',
+        status: 'read'
+      },
+      {
+        id: 'm6',
+        conversationId: 'conv_paul',
+        senderId: 'u_paul',
+        text: 'Here!',
+        type: 'text',
+        time: '15:43',
+        status: 'read'
+      },
+      {
+        id: 'm7',
+        conversationId: 'conv_paul',
+        senderId: 'u_nitu',
+        text: 'Thanks, see u in a bar after work',
+        type: 'text',
+        time: '15:45',
+        status: 'read'
+      }
+    ];
+
+    // Chat requests seed
+    const INITIAL_REQUESTS = [
+      {
+        id: 'req_1',
+        name: 'Rachel Zane',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100',
+        message: 'Hey Nitu! Would love to collaborate on the brand kit.',
+        time: '25m ago'
+      },
+      {
+        id: 'req_2',
+        name: 'Michael Ross',
+        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100',
+        message: 'Hi there! Let us connect on Vynzo.',
+        time: '2h ago'
+      }
+    ];
+
+    // Global in-memory state engine
+    window.AppState = {
+      currentUserId: 'u_nitu',
+      activeTab: 'chats', // 'chats' | 'requests'
+      activeConversationId: 'conv_paul',
+      searchQuery: '',
+      chatFilterQuery: '',
+      conversations: [...INITIAL_CONVERSATIONS],
+      messages: [...INITIAL_MESSAGES],
+      requests: [...INITIAL_REQUESTS],
+      stories: [...INITIAL_STORIES],
+      users: [...USERS_SEED],
+      mobileView: 'list', // 'list' | 'chat'
+      activeCall: null,
+      callTimerInterval: null,
+      callSeconds: 0,
+      activeStoryIndex: 0,
+      storyTimerInterval: null,
+      recordingInterval: null,
+      recordingSeconds: 0,
+      isRecordingVoice: false
+    };
+
+    // Responsive View Handler for Small Screens
+    window.updateResponsiveLayout = function() {
+      const isMobile = window.innerWidth < 768;
+      const sidebarPane = document.getElementById('sidebarPane');
+      const chatMainPane = document.getElementById('chatMainPane');
+      const mainNavRail = document.getElementById('mainNavRail');
+
+      if (!sidebarPane || !chatMainPane) return;
+
+      if (!isMobile) {
+        // Desktop / Tablet layout: Show both sidebar & main chat side-by-side
+        sidebarPane.classList.remove('hidden');
+        chatMainPane.classList.remove('hidden');
+        if (mainNavRail) mainNavRail.classList.remove('hidden');
+      } else {
+        // Mobile layout: Single-pane view (either Chat List or Current Conversation)
+        if (window.AppState.mobileView === 'chat') {
+          sidebarPane.classList.add('hidden');
+          chatMainPane.classList.remove('hidden');
+          if (mainNavRail) mainNavRail.classList.add('hidden'); // Hide bottom nav inside active chat to give full keyboard space
+        } else {
+          sidebarPane.classList.remove('hidden');
+          chatMainPane.classList.add('hidden');
+          if (mainNavRail) mainNavRail.classList.remove('hidden');
+        }
+      }
+    };
+
+    // Mobile Back to Chats action
+    window.backToConversationsList = function() {
+      window.AppState.mobileView = 'list';
+      window.updateResponsiveLayout();
+    };
+
+    window.addEventListener('resize', window.updateResponsiveLayout);
+    // Render Status Stories Carousel
+    function renderStatusCarousel() {
+      const row = document.getElementById('statusAvatarRow');
+      if (!row) return;
+
+      const myStatusHtml = `
+        <div onclick="window.triggerAddStatusUpload()" class="flex flex-col items-center gap-1 shrink-0 cursor-pointer group">
+          <div class="w-12 h-12 rounded-full border-2 border-dashed border-wa-primary flex items-center justify-center bg-wa-50 text-wa-primary group-hover:scale-105 transition shadow-sm">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          </div>
+          <span class="text-[10px] font-bold text-slate-500">My status</span>
+        </div>
+      `;
+
+      const storiesHtml = window.AppState.stories.map((st, idx) => `
+        <div onclick="window.viewStoryAtIndex(${idx})" class="flex flex-col items-center gap-1 shrink-0 cursor-pointer group">
+          <div class="${st.viewed ? 'status-ring-seen' : 'status-ring'} rounded-full group-hover:scale-105 transition shadow-sm">
+            <img src="${st.avatar}" class="w-11 h-11 rounded-full object-cover border-2 border-white">
+          </div>
+          <span class="text-[10px] font-medium text-slate-600 truncate max-w-[50px]">${st.name.split(' ')[0]}</span>
+        </div>
+      `).join('');
+
+      row.innerHTML = myStatusHtml + storiesHtml;
+    }
+
+    // Render Conversation Cards (Pill style matching screenshot)
+    function renderConversationCards() {
+      const container = document.getElementById('conversationsContainer');
+      if (!container) return;
+
+      const q = window.AppState.searchQuery.toLowerCase().trim();
+
+      // Requests Mode
+      if (window.AppState.activeTab === 'requests') {
+        if (window.AppState.requests.length === 0) {
+          container.innerHTML = `
+            <div class="py-12 text-center text-slate-400">
+              <p class="text-xs font-semibold">No pending chat requests</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = window.AppState.requests.map(req => `
+          <div class="p-3.5 bg-white rounded-2xl border border-slate-200/80 custom-shadow-card flex flex-col gap-2.5">
+            <div class="flex items-center gap-3">
+              <img src="${req.avatar}" class="w-10 h-10 rounded-full object-cover">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between">
+                  <h4 class="text-xs font-bold text-slate-900 truncate">${req.name}</h4>
+                  <span class="text-[10px] text-slate-400">${req.time}</span>
+                </div>
+                <p class="text-[11px] text-slate-500 truncate">${req.message}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 pt-1 border-t border-slate-100">
+              <button onclick="window.acceptRequest('${req.id}')" class="flex-1 py-1.5 rounded-xl bg-wa-sidebar hover:bg-wa-dark text-white text-xs font-bold transition shadow-sm">
+                Accept
+              </button>
+              <button onclick="window.declineRequest('${req.id}')" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 text-xs font-semibold transition">
+                Decline
+              </button>
+            </div>
+          </div>
+        `).join('');
+        return;
+      }
+
+      // Normal Chats Mode
+      const filtered = window.AppState.conversations.filter(c => c.name.toLowerCase().includes(q));
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="py-12 text-center text-slate-400">
+            <p class="text-xs font-semibold">No conversations found</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(c => {
+        const isSelected = window.AppState.activeConversationId === c.id;
+        const hasUnread = (c.unreadCount || 0) > 0;
+
+        // Double check mark SVG with blue or grey
+        const isRead = c.status === 'read';
+        const checkIcon = `
+          <span class="inline-flex ${isRead ? 'text-sky-500' : 'text-slate-400'} ml-1">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 12l5 5L20 6M9 12l5 5L24 6"/>
+            </svg>
+          </span>
+        `;
+
+        return `
+          <div onclick="window.selectConversation('${c.id}')" class="p-3.5 rounded-2xl cursor-pointer transition flex items-center gap-3.5 ${
+            isSelected 
+              ? 'bg-white shadow-md shadow-slate-200/50 border border-slate-200/90' 
+              : 'hover:bg-white/80 border border-transparent'
+          }">
+            <div class="relative shrink-0">
+              <img src="${c.avatar}" alt="${c.name}" class="w-12 h-12 rounded-full object-cover">
+              ${c.isGroup ? `
+                <span class="absolute -bottom-1 -right-1 w-4 h-4 bg-wa-sidebar text-white rounded-full flex items-center justify-center text-[9px] font-bold">G</span>
+              ` : ''}
+            </div>
+
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between mb-1">
+                <h4 class="text-xs font-extrabold text-slate-900 truncate ${hasUnread ? 'text-black' : ''}">${c.name}</h4>
+                <span class="text-[10px] font-semibold text-slate-400">${c.time}</span>
+              </div>
+              <div class="flex items-center justify-between gap-1">
+                <p class="text-[11px] truncate ${hasUnread ? 'text-slate-900 font-bold' : 'text-slate-500'}">
+                  ${c.lastMessage}
+                  ${!hasUnread && !c.isGroup ? checkIcon : ''}
+                </p>
+
+                <!-- GREEN UNREAD NUMBER BADGE (Matching screenshot: 3, 21, etc.) -->
+                ${hasUnread ? `
+                  <span class="min-w-[19px] h-[19px] px-1 rounded-full bg-wa-sidebar text-white font-extrabold text-[10px] flex items-center justify-center shrink-0 shadow-sm animate-pulse-soft">
+                    ${c.unreadCount}
+                  </span>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Update unread totals
+      const totalUnread = window.AppState.conversations.reduce((acc, c) => acc + (c.unreadCount || 0), 0);
+      const totalPill = document.getElementById('totalUnreadPill');
+      const tabBadge = document.getElementById('tabUnreadCount');
+      if (totalPill) totalPill.textContent = `${totalUnread} new`;
+      if (tabBadge) tabBadge.textContent = totalUnread;
+
+      const reqCount = window.AppState.requests.length;
+      const railBadge = document.getElementById('railRequestBadge');
+      const tabReq = document.getElementById('tabRequestsCount');
+      if (railBadge) railBadge.textContent = reqCount;
+      if (tabReq) tabReq.textContent = reqCount;
+    }
+
+    // Render Active Chat Header
+    function renderActiveChatHeader() {
+      const header = document.getElementById('activeChatHeader');
+      if (!header) return;
+
+      const activeConv = window.AppState.conversations.find(c => c.id === window.AppState.activeConversationId);
+      if (!activeConv) return;
+
+      const partnerUser = window.AppState.users.find(u => u.name === activeConv.name);
+      const isOnline = partnerUser ? partnerUser.online : true;
+      const subtitleText = activeConv.isGroup 
+        ? `${activeConv.participantIds.length} members`
+        : (isOnline ? 'online' : 'Last seen recently');
+
+      header.innerHTML = `
+        <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+          <!-- Mobile Back Navigation Button (Hidden on Desktop) -->
+          <button onclick="window.backToConversationsList()" title="Back to chats" class="md:hidden p-1.5 -ml-1 text-slate-600 hover:text-slate-900 rounded-xl hover:bg-slate-100 transition active:scale-95 shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+            </svg>
+          </button>
+
+          <div class="relative cursor-pointer shrink-0" onclick="window.viewStory('${activeConv.name}')">
+            <img src="${activeConv.avatar}" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover">
+            ${isOnline ? '<span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-wa-primary border-2 border-white rounded-full"></span>' : ''}
+          </div>
+          <div class="min-w-0">
+            <h3 class="text-xs sm:text-sm font-extrabold text-slate-900 truncate">${activeConv.name}</h3>
+            <p class="text-[10px] sm:text-[11px] text-slate-400 font-medium flex items-center gap-1 truncate">
+              ${isOnline ? '<span class="w-1.5 h-1.5 rounded-full bg-wa-primary animate-pulse shrink-0"></span>' : ''}
+              <span class="truncate">${subtitleText}</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Top Right Action Icons from Dribbble Design -->
+        <div class="flex items-center gap-2.5 sm:gap-4 text-slate-400 shrink-0">
+          <button onclick="window.startCallModal('voice')" title="Voice Call" class="p-1 sm:p-0 hover:text-slate-800 transition active:scale-95">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+          </button>
+          <button onclick="window.startCallModal('video')" title="Video Call" class="p-1 sm:p-0 hover:text-slate-800 transition active:scale-95">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          </button>
+          <button onclick="window.toggleInChatSearch()" title="Search in chat" class="p-1 sm:p-0 hover:text-slate-800 transition active:scale-95">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </button>
+          <button onclick="window.openAddMemberModal()" title="Add Members" class="p-1 sm:p-0 hover:text-slate-800 transition active:scale-95">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+          </button>
+        </div>
+      `;
+    }
+
+    // Render Active Message Bubbles
+    function renderMessages() {
+      const feed = document.getElementById('messagesFeedContainer');
+      if (!feed) return;
+
+      const activeId = window.AppState.activeConversationId;
+      let msgs = window.AppState.messages.filter(m => m.conversationId === activeId);
+
+      // Filter if in-chat search query present
+      if (window.AppState.chatFilterQuery) {
+        const q = window.AppState.chatFilterQuery.toLowerCase();
+        msgs = msgs.filter(m => m.text && m.text.toLowerCase().includes(q));
+      }
+
+      feed.innerHTML = msgs.map(m => {
+        const isMine = m.senderId === window.AppState.currentUserId;
+        const sender = window.AppState.users.find(u => u.id === m.senderId);
+        const senderName = sender ? sender.name : 'Participant';
+
+        // Message Type: Text
+        if (m.type === 'text') {
+          return `
+            <div class="flex flex-col ${isMine ? 'items-end' : 'items-start'}">
+              ${!isMine ? `<span class="text-[10px] font-bold text-slate-400 mb-1 ml-1">${senderName}</span>` : ''}
+              <div class="max-w-[70%] sm:max-w-md px-5 py-3 rounded-[22px] text-xs font-medium leading-relaxed ${
+                isMine 
+                  ? 'bg-wa-sidebar text-white rounded-br-none shadow-sm' 
+                  : 'bg-[#f1f4f6] text-slate-800 rounded-bl-none'
+              }">
+                <p>${m.text}</p>
+                <div class="flex items-center justify-end gap-1 mt-1 text-[9px] ${isMine ? 'text-white/80' : 'text-slate-400'}">
+                  <span>${m.time}</span>
+                  ${isMine ? renderTickSvg(m.status) : ''}
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        // Message Type: Voice Note / Audio Waveform
+        if (m.type === 'audio') {
+          return `
+            <div class="flex flex-col ${isMine ? 'items-end' : 'items-start'}">
+              ${!isMine ? `<span class="text-[10px] font-bold text-slate-400 mb-1 ml-1">${senderName}</span>` : ''}
+              <div class="px-5 py-3 rounded-[22px] ${isMine ? 'bg-wa-sidebar text-white rounded-br-none' : 'bg-[#f1f4f6] text-slate-800 rounded-bl-none'} flex items-center gap-3 min-w-[240px] sm:min-w-[280px]">
+                <button onclick="window.togglePlayVoiceNote(this)" class="w-8 h-8 rounded-full ${isMine ? 'bg-white/20 text-white' : 'bg-slate-300 text-slate-700'} hover:scale-105 flex items-center justify-center transition">
+                  <svg class="w-4 h-4 ml-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M4.555 3.168A1 1 0 003 4.07v11.86a1 1 0 001.555.832l10-5.93a1 1 0 000-1.664l-10-5.93z"/></svg>
+                </button>
+                <div class="flex-1 flex items-center gap-0.5">
+                  <span class="w-0.5 h-3 ${isMine ? 'bg-white/60' : 'bg-slate-400'} rounded-full"></span>
+                  <span class="w-0.5 h-5 ${isMine ? 'bg-white' : 'bg-slate-500'} rounded-full"></span>
+                  <span class="w-0.5 h-4 ${isMine ? 'bg-white/60' : 'bg-slate-400'} rounded-full"></span>
+                  <span class="w-0.5 h-6 ${isMine ? 'bg-white' : 'bg-slate-600'} rounded-full"></span>
+                  <span class="w-0.5 h-3 ${isMine ? 'bg-white/60' : 'bg-slate-400'} rounded-full"></span>
+                  <span class="w-0.5 h-7 ${isMine ? 'bg-white' : 'bg-wa-sidebar'} rounded-full"></span>
+                  <span class="w-0.5 h-4 ${isMine ? 'bg-white/60' : 'bg-slate-500'} rounded-full"></span>
+                  <span class="w-0.5 h-6 ${isMine ? 'bg-white' : 'bg-slate-500'} rounded-full"></span>
+                  <span class="w-0.5 h-3 ${isMine ? 'bg-white/60' : 'bg-slate-400'} rounded-full"></span>
+                  <span class="w-0.5 h-5 ${isMine ? 'bg-white' : 'bg-slate-500'} rounded-full"></span>
+                  <span class="w-0.5 h-2 ${isMine ? 'bg-white/60' : 'bg-slate-300'} rounded-full"></span>
+                </div>
+                <span class="text-[11px] font-bold ${isMine ? 'text-white/80' : 'text-slate-400'}">${m.audioLength || '0:18'}</span>
+              </div>
+            </div>
+          `;
+        }
+
+        // Message Type: Document / PDF
+        if (m.type === 'document') {
+          return `
+            <div class="flex flex-col ${isMine ? 'items-end' : 'items-start'}">
+              ${!isMine ? `<span class="text-[10px] font-bold text-slate-400 mb-1 ml-1">${senderName}</span>` : ''}
+              <div onclick="window.downloadPdfSimulation('${m.docTitle}')" class="px-4 py-3 rounded-[22px] ${isMine ? 'bg-wa-sidebar text-white rounded-br-none' : 'bg-[#f1f4f6] text-slate-800 rounded-bl-none'} flex items-center gap-3 cursor-pointer hover:opacity-90 transition">
+                <div class="w-8 h-8 rounded-lg ${isMine ? 'bg-white/20 text-white' : 'bg-slate-300 text-slate-700'} flex items-center justify-center font-bold text-[10px]">
+                  PDF
+                </div>
+                <span class="text-xs font-bold ${isMine ? 'text-white underline' : 'text-sky-500 underline'} truncate max-w-[200px] sm:max-w-xs">${m.docTitle}</span>
+              </div>
+            </div>
+          `;
+        }
+
+        return '';
+      }).join('');
+
+      feed.scrollTop = feed.scrollHeight;
+    }
+
+    // Helper for tick rendering
+    function renderTickSvg(status) {
+      const isBlue = status === 'read';
+      const colorClass = isBlue ? 'text-sky-300' : 'text-white/60';
+      return `
+        <svg class="w-3.5 h-3.5 inline ${colorClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 12l5 5L20 6M9 12l5 5L24 6"/>
+        </svg>
+      `;
+    }
+
+    // Interactive Actions
+    window.selectConversation = function(id) {
+      window.AppState.activeConversationId = id;
+      window.AppState.mobileView = 'chat'; // Automatically transition to chat view on mobile screens
+      window.updateResponsiveLayout();
+
+      const conv = window.AppState.conversations.find(c => c.id === id);
+      if (conv) {
+        conv.unreadCount = 0;
+        conv.status = 'read';
+      }
+
+      // Mark all messages in this conversation as read
+      window.AppState.messages.forEach(m => {
+        if (m.conversationId === id) {
+          m.status = 'read';
+        }
+      });
+
+      broadcastAction('MARK_READ', { conversationId: id });
+      renderConversationCards();
+      renderActiveChatHeader();
+      renderMessages();
+    };
+
+    window.switchMainTab = function(tabName) {
+      window.AppState.activeTab = tabName;
+      window.AppState.mobileView = 'list'; // Bring user back to the list whenever switching tabs
+      window.updateResponsiveLayout();
+
+      const pillChats = document.getElementById('pillBtnChats');
+      const pillReq = document.getElementById('pillBtnRequests');
+      const navChatBtn = document.getElementById('navChatIconBtn');
+      const navReqBtn = document.getElementById('navRequestsIconBtn');
+      const pillActive = document.getElementById('navActivePill');
+
+      if (tabName === 'chats') {
+        pillChats.className = "flex-1 py-1.5 rounded-xl text-xs font-bold bg-wa-100 text-wa-dark flex items-center justify-center gap-1.5 transition";
+        pillReq.className = "flex-1 py-1.5 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 flex items-center justify-center gap-1.5 transition";
+        navChatBtn.classList.add('bg-white/20');
+        navReqBtn.classList.remove('bg-white/20');
+        if (pillActive) navChatBtn.appendChild(pillActive);
+      } else {
+        pillReq.className = "flex-1 py-1.5 rounded-xl text-xs font-bold bg-wa-100 text-wa-dark flex items-center justify-center gap-1.5 transition";
+        pillChats.className = "flex-1 py-1.5 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 flex items-center justify-center gap-1.5 transition";
+        navReqBtn.classList.add('bg-white/20');
+        navChatBtn.classList.remove('bg-white/20');
+        if (pillActive) navReqBtn.appendChild(pillActive);
+      }
+
+      renderConversationCards();
+    };
+
+    window.handleSendChatMessage = function(e) {
+      if (e) e.preventDefault();
+      const input = document.getElementById('chatMessageInput');
+      if (!input || !input.value.trim() || !window.AppState.activeConversationId) return;
+
+      const text = input.value.trim();
+      const activeConv = window.AppState.conversations.find(c => c.id === window.AppState.activeConversationId);
+
+      const newMsg = {
+        id: 'msg_' + Date.now(),
+        conversationId: window.AppState.activeConversationId,
+        senderId: window.AppState.currentUserId,
+        text: text,
+        type: 'text',
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        status: 'read'
+      };
+
+      window.AppState.messages.push(newMsg);
+      if (activeConv) {
+        activeConv.lastMessage = text;
+        activeConv.time = newMsg.time;
+      }
+
+      input.value = '';
+      playChatChime();
+      renderMessages();
+      renderConversationCards();
+      broadcastAction('NEW_MESSAGE', newMsg);
+    };
+
+    window.simulateIncomingMessage = function() {
+      const targets = window.AppState.conversations.filter(c => c.id !== window.AppState.activeConversationId);
+      const target = targets[Math.floor(Math.random() * targets.length)] || window.AppState.conversations[0];
+
+      const sampleSnippets = [
+        "Hey! Are you still up for meeting tonight? 🍻",
+        "Just sent over the revised design file!",
+        "Can you check your email real quick?",
+        "See you at the gym tomorrow morning! 💪"
+      ];
+      const randomText = sampleSnippets[Math.floor(Math.random() * sampleSnippets.length)];
+
+      const incoming = {
+        id: 'msg_' + Date.now(),
+        conversationId: target.id,
+        senderId: target.participantIds.find(id => id !== window.AppState.currentUserId) || 'u_paul',
+        text: randomText,
+        type: 'text',
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        status: 'delivered'
+      };
+
+      window.AppState.messages.push(incoming);
+      target.lastMessage = randomText;
+      target.time = incoming.time;
+      target.unreadCount = (target.unreadCount || 0) + 1;
+
+      playChatChime();
+      renderConversationCards();
+      if (window.AppState.activeConversationId === target.id) {
+        renderMessages();
+      }
+      window.showToast(`📩 New message from ${target.name}! Unread count badge updated.`);
+      broadcastAction('NEW_MESSAGE', incoming);
+    };
+
+    // Live Voice Note Recording
+    window.startLiveVoiceRecording = function() {
+      const ribbon = document.getElementById('voiceRecordingRibbon');
+      const timer = document.getElementById('recordingTimer');
+      if (!ribbon) return;
+
+      ribbon.classList.remove('hidden');
+      window.AppState.isRecordingVoice = true;
+      window.AppState.recordingSeconds = 0;
+      if (timer) timer.textContent = '0:00';
+
+      playChatChime('msg');
+      if (window.AppState.recordingInterval) clearInterval(window.AppState.recordingInterval);
+      window.AppState.recordingInterval = setInterval(() => {
+        window.AppState.recordingSeconds++;
+        const s = window.AppState.recordingSeconds;
+        const mins = Math.floor(s / 60);
+        const secs = s % 60;
+        if (timer) timer.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+      }, 1000);
+    };
+
+    window.cancelVoiceRecording = function() {
+      const ribbon = document.getElementById('voiceRecordingRibbon');
+      if (ribbon) ribbon.classList.add('hidden');
+      clearInterval(window.AppState.recordingInterval);
+      window.AppState.isRecordingVoice = false;
+      window.showToast('Voice recording canceled');
+    };
+
+    window.finishAndSendVoiceRecording = function() {
+      const ribbon = document.getElementById('voiceRecordingRibbon');
+      if (ribbon) ribbon.classList.add('hidden');
+      clearInterval(window.AppState.recordingInterval);
+      window.AppState.isRecordingVoice = false;
+
+      const durationStr = `0:${window.AppState.recordingSeconds < 10 ? '0' : ''}${window.AppState.recordingSeconds || 12}`;
+      const activeConv = window.AppState.conversations.find(c => c.id === window.AppState.activeConversationId);
+
+      const voiceMsg = {
+        id: 'msg_v_' + Date.now(),
+        conversationId: window.AppState.activeConversationId,
+        senderId: window.AppState.currentUserId,
+        type: 'audio',
+        audioLength: durationStr,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        status: 'read'
+      };
+
+      window.AppState.messages.push(voiceMsg);
+      if (activeConv) {
+        activeConv.lastMessage = `🎤 Voice message (${durationStr})`;
+        activeConv.time = voiceMsg.time;
+      }
+
+      playChatChime();
+      renderMessages();
+      renderConversationCards();
+      window.showToast('Voice note recorded and sent!');
+      broadcastAction('NEW_MESSAGE', voiceMsg);
+    };
+
+    window.handleSendFileAttachment = function(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file || !window.AppState.activeConversationId) return;
+
+      const docMsg = {
+        id: 'msg_f_' + Date.now(),
+        conversationId: window.AppState.activeConversationId,
+        senderId: window.AppState.currentUserId,
+        type: 'document',
+        docTitle: file.name,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        status: 'read'
+      };
+
+      window.AppState.messages.push(docMsg);
+      const activeConv = window.AppState.conversations.find(c => c.id === window.AppState.activeConversationId);
+      if (activeConv) {
+        activeConv.lastMessage = `📎 ${file.name}`;
+        activeConv.time = docMsg.time;
+      }
+
+      playChatChime();
+      renderMessages();
+      renderConversationCards();
+      window.showToast(`Document ${file.name} sent!`);
+      broadcastAction('NEW_MESSAGE', docMsg);
+      e.target.value = '';
+    };
+
+    window.downloadPdfSimulation = function(title) {
+      window.showToast(`Downloading document: ${title}`);
+    };
+
+    window.togglePlayVoiceNote = function(btn) {
+      playChatChime();
+      btn.innerHTML = `<svg class="w-4 h-4 ml-0.5 text-wa-sidebar animate-pulse" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>`;
+      setTimeout(() => {
+        btn.innerHTML = `<svg class="w-4 h-4 ml-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M4.555 3.168A1 1 0 003 4.07v11.86a1 1 0 001.555.832l10-5.93a1 1 0 000-1.664l-10-5.93z"/></svg>`;
+      }, 2500);
+    };
+
+    // Live Voice/Video Calls Engine
+    window.startCallModal = function(type = 'voice') {
+      const modal = document.getElementById('liveCallModal');
+      const activeConv = window.AppState.conversations.find(c => c.id === window.AppState.activeConversationId) || window.AppState.conversations[0];
+      const avatarEl = document.getElementById('callUserAvatar');
+      const nameEl = document.getElementById('callUserName');
+      const labelEl = document.getElementById('callTypeLabel');
+      const timerEl = document.getElementById('callDuration');
+
+      avatarEl.src = activeConv.avatar;
+      nameEl.textContent = activeConv.name;
+      labelEl.textContent = type === 'video' ? 'Video Call' : 'Voice Call';
+      modal.classList.remove('hidden');
+
+      playChatChime('call');
+      window.AppState.callSeconds = 0;
+      if (timerEl) timerEl.textContent = '00:00';
+
+      if (window.AppState.callTimerInterval) clearInterval(window.AppState.callTimerInterval);
+      window.AppState.callTimerInterval = setInterval(() => {
+        window.AppState.callSeconds++;
+        const s = window.AppState.callSeconds;
+        const mins = Math.floor(s / 60);
+        const secs = s % 60;
+        if (timerEl) timerEl.textContent = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+      }, 1000);
+    };
+
+    window.endActiveCall = function() {
+      const modal = document.getElementById('liveCallModal');
+      if (modal) modal.classList.add('hidden');
+      clearInterval(window.AppState.callTimerInterval);
+      window.showToast('Call ended.');
+    };
+
+    window.toggleCallMute = function() {
+      const btn = document.getElementById('callMuteBtn');
+      if (btn) {
+        btn.classList.toggle('bg-rose-500');
+        window.showToast('Microphone toggled');
+      }
+    };
+
+    window.toggleCallVideo = function() {
+      const btn = document.getElementById('callVideoToggleBtn');
+      if (btn) {
+        btn.classList.toggle('bg-amber-500');
+        window.showToast('Camera toggled');
+      }
+    };
+
+    // Stories Status Engine
+    window.viewStoryAtIndex = function(idx) {
+      window.AppState.activeStoryIndex = idx;
+      const story = window.AppState.stories[idx];
+      if (!story) return;
+
+      story.viewed = true;
+      renderStatusCarousel();
+
+      const modal = document.getElementById('statusViewerModal');
+      const nameEl = document.getElementById('storyUserName');
+      const avatarEl = document.getElementById('storyUserAvatar');
+      const imageEl = document.getElementById('storyImageMedia');
+      const captionEl = document.getElementById('storyCaptionText');
+      const timeEl = document.getElementById('storyUserTime');
+      const progress = document.getElementById('storyProgressFill');
+
+      nameEl.textContent = story.name;
+      avatarEl.src = story.avatar;
+      imageEl.src = story.image;
+      captionEl.textContent = `"${story.caption}"`;
+      timeEl.textContent = story.time;
+
+      modal.classList.remove('hidden');
+
+      // Auto progression animation
+      if (progress) progress.style.width = '0%';
+      let step = 0;
+      clearInterval(window.AppState.storyTimerInterval);
+      window.AppState.storyTimerInterval = setInterval(() => {
+        step += 2;
+        if (progress) progress.style.width = `${step}%`;
+        if (step >= 100) {
+          clearInterval(window.AppState.storyTimerInterval);
+          if (window.AppState.activeStoryIndex < window.AppState.stories.length - 1) {
+            window.viewStoryAtIndex(window.AppState.activeStoryIndex + 1);
+          } else {
+            window.closeStatusViewer();
+          }
+        }
+      }, 100);
+    };
+
+    window.viewStory = function(name) {
+      const idx = window.AppState.stories.findIndex(s => s.name === name);
+      if (idx !== -1) {
+        window.viewStoryAtIndex(idx);
+      } else {
+        window.viewStoryAtIndex(0);
+      }
+    };
+
+    window.closeStatusViewer = function() {
+      clearInterval(window.AppState.storyTimerInterval);
+      const modal = document.getElementById('statusViewerModal');
+      if (modal) modal.classList.add('hidden');
+    };
+
+    window.sendReplyToActiveStory = function() {
+      const input = document.getElementById('statusReplyInput');
+      const reply = input ? input.value.trim() : '';
+      if (!reply) return;
+
+      const story = window.AppState.stories[window.AppState.activeStoryIndex];
+      window.closeStatusViewer();
+      window.showToast(`Reply sent to ${story.name}: "${reply}"`);
+      if (input) input.value = '';
+    };
+
+    window.triggerAddStatusUpload = function() {
+      const modal = document.getElementById('addStatusModal');
+      if (modal) modal.classList.remove('hidden');
+    };
+
+    window.closeAddStatusModal = function() {
+      const modal = document.getElementById('addStatusModal');
+      if (modal) modal.classList.add('hidden');
+    };
+
+    window.submitNewStatus = function() {
+      const photo = document.getElementById('statusPhotoUrlInput').value.trim();
+      const caption = document.getElementById('statusCaptionInput').value.trim();
+      if (!photo) return;
+
+      const newStory = {
+        id: 'st_my_' + Date.now(),
+        userId: window.AppState.currentUserId,
+        name: 'My status',
+        avatar: document.getElementById('railMyAvatar').src,
+        image: photo,
+        caption: caption || 'New status update',
+        time: 'Just now',
+        viewed: false
+      };
+
+      window.AppState.stories.unshift(newStory);
+      renderStatusCarousel();
+      window.closeAddStatusModal();
+      window.showToast('Your status update is now live!');
+    };
+
+    // In-Chat Search
+    window.toggleInChatSearch = function() {
+      const bar = document.getElementById('inChatSearchBar');
+      if (!bar) return;
+      bar.classList.toggle('hidden');
+      const input = document.getElementById('chatSearchInput');
+      if (!bar.classList.contains('hidden') && input) {
+        input.focus();
+      } else {
+        window.AppState.chatFilterQuery = '';
+        renderMessages();
+      }
+    };
+
+    window.filterMessagesInChat = function(val) {
+      window.AppState.chatFilterQuery = val.trim();
+      renderMessages();
+    };
+
+    // Add Member Modal
+    window.openAddMemberModal = function() {
+      const modal = document.getElementById('addMemberToChatModal');
+      const list = document.getElementById('availableMembersToAddList');
+      if (!modal || !list) return;
+
+      const activeConv = window.AppState.conversations.find(c => c.id === window.AppState.activeConversationId);
+      const existing = activeConv ? activeConv.participantIds : [];
+
+      list.innerHTML = window.AppState.users.map(u => {
+        const inChat = existing.includes(u.id);
+        return `
+          <label class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-100 cursor-pointer">
+            <div class="flex items-center gap-2">
+              <img src="${u.avatar}" class="w-7 h-7 rounded-full object-cover">
+              <span class="text-xs font-semibold text-slate-800">${u.name}</span>
+            </div>
+            <input type="checkbox" value="${u.id}" ${inChat ? 'checked disabled' : ''} class="add-member-checkbox rounded text-wa-primary">
+          </label>
+        `;
+      }).join('');
+
+      modal.classList.remove('hidden');
+    };
+
+    window.closeAddMemberModal = function() {
+      const modal = document.getElementById('addMemberToChatModal');
+      if (modal) modal.classList.add('hidden');
+    };
+
+    window.confirmAddMembersToCurrentChat = function() {
+      const activeConv = window.AppState.conversations.find(c => c.id === window.AppState.activeConversationId);
+      if (!activeConv) return;
+
+      const checked = Array.from(document.querySelectorAll('.add-member-checkbox:checked:not(:disabled)')).map(c => c.value);
+      if (checked.length === 0) {
+        window.showToast('No new members selected');
+        return;
+      }
+
+      activeConv.isGroup = true;
+      activeConv.participantIds.push(...checked);
+      window.closeAddMemberModal();
+      renderActiveChatHeader();
+      renderConversationCards();
+      window.showToast(`Added ${checked.length} member(s) to conversation`);
+    };
+
+    // Create Multi-Person Group
+    window.openCreateGroupModal = function() {
+      const modal = document.getElementById('createGroupModal');
+      const list = document.getElementById('groupMembersList');
+      if (!modal || !list) return;
+
+      list.innerHTML = window.AppState.users.map(u => `
+        <label class="flex items-center justify-between p-2.5 rounded-2xl hover:bg-slate-50 cursor-pointer">
+          <div class="flex items-center gap-2.5">
+            <img src="${u.avatar}" class="w-8 h-8 rounded-full object-cover">
+            <span class="text-xs font-bold text-slate-800">${u.name}</span>
+          </div>
+          <input type="checkbox" value="${u.id}" class="member-check-box rounded text-wa-primary focus:ring-wa-primary w-4 h-4">
+        </label>
+      `).join('');
+
+      modal.classList.remove('hidden');
+    };
+
+    window.closeCreateGroupModal = function() {
+      const modal = document.getElementById('createGroupModal');
+      if (modal) modal.classList.add('hidden');
+    };
+
+    window.submitCreateGroup = function() {
+      const nameInput = document.getElementById('groupNameInput');
+      const gName = nameInput ? nameInput.value.trim() : '';
+      if (!gName) {
+        window.showToast('Please specify a group name');
+        return;
+      }
+
+      const checkedBoxes = document.querySelectorAll('.member-check-box:checked');
+      const selected = Array.from(checkedBoxes).map(b => b.value);
+      if (selected.length === 0) {
+        window.showToast('Please select at least one member');
+        return;
+      }
+
+      const newGroup = {
+        id: 'conv_group_' + Date.now(),
+        isGroup: true,
+        name: gName,
+        avatar: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=120&auto=format&fit=crop&q=80',
+        participantIds: ['u_nitu', ...selected],
+        lastMessage: `Group "${gName}" created`,
+        time: 'Just now',
+        unreadCount: 0,
+        status: 'read'
+      };
+
+      window.AppState.conversations.unshift(newGroup);
+      window.closeCreateGroupModal();
+      if (nameInput) nameInput.value = '';
+      window.selectConversation(newGroup.id);
+      window.showToast(`Group "${gName}" successfully created!`);
+    };
+
+    // Chat Requests System
+    window.acceptRequest = function(id) {
+      const idx = window.AppState.requests.findIndex(r => r.id === id);
+      if (idx === -1) return;
+      const req = window.AppState.requests[idx];
+      window.AppState.requests.splice(idx, 1);
+
+      const newConv = {
+        id: 'conv_req_' + Date.now(),
+        isGroup: false,
+        name: req.name,
+        avatar: req.avatar,
+        participantIds: ['u_nitu', 'u_new'],
+        lastMessage: 'Hey! Chat request accepted.',
+        time: 'Just now',
+        unreadCount: 0,
+        status: 'read'
+      };
+
+      window.AppState.conversations.unshift(newConv);
+      renderConversationCards();
+      window.selectConversation(newConv.id);
+      window.showToast(`Accepted chat request from ${req.name}!`);
+    };
+
+    window.declineRequest = function(id) {
+      const idx = window.AppState.requests.findIndex(r => r.id === id);
+      if (idx !== -1) {
+        window.AppState.requests.splice(idx, 1);
+        renderConversationCards();
+        window.showToast('Chat request declined.');
+      }
+    };
+
+    // User Profile Modal
+    window.openProfileModal = function() {
+      const modal = document.getElementById('userProfileModal');
+      const curUser = window.AppState.users.find(u => u.id === window.AppState.currentUserId) || window.AppState.users[0];
+      document.getElementById('profileModalAvatar').src = curUser.avatar;
+      document.getElementById('profileNameInput').value = curUser.name;
+      document.getElementById('profileAboutInput').value = curUser.about;
+      modal.classList.remove('hidden');
+    };
+
+    window.closeProfileModal = function() {
+      const modal = document.getElementById('userProfileModal');
+      if (modal) modal.classList.add('hidden');
+    };
+
+    window.saveProfileDetails = function() {
+      const curUser = window.AppState.users.find(u => u.id === window.AppState.currentUserId) || window.AppState.users[0];
+      const newName = document.getElementById('profileNameInput').value.trim();
+      const newAbout = document.getElementById('profileAboutInput').value.trim();
+      if (newName) curUser.name = newName;
+      if (newAbout) curUser.about = newAbout;
+
+      document.getElementById('currentLoggedName').textContent = curUser.name;
+      window.closeProfileModal();
+      window.showToast('Profile updated successfully!');
+    };
+
+    window.switchUserAccountToggle = function() {
+      const nextUser = window.AppState.currentUserId === 'u_nitu' ? window.AppState.users[1] : window.AppState.users[0];
+      window.AppState.currentUserId = nextUser.id;
+      document.getElementById('currentLoggedName').textContent = nextUser.name;
+      document.getElementById('currentLoggedAvatar').src = nextUser.avatar;
+      document.getElementById('railMyAvatar').src = nextUser.avatar;
+      renderConversationCards();
+      renderActiveChatHeader();
+      renderMessages();
+      window.showToast(`Switched account to ${nextUser.name}`);
+    };
+
+    window.toggleEmojiMenu = function() {
+      const pop = document.getElementById('quickEmojiPopup');
+      if (pop) pop.classList.toggle('hidden');
+    };
+
+    window.insertEmoji = function(emoji) {
+      const input = document.getElementById('chatMessageInput');
+      if (input) {
+        input.value += emoji;
+        input.focus();
+      }
+      const pop = document.getElementById('quickEmojiPopup');
+      if (pop) pop.classList.add('hidden');
+    };
+
+    window.scrollToLatestMessage = function() {
+      const feed = document.getElementById('messagesFeedContainer');
+      if (feed) feed.scrollTop = feed.scrollHeight;
+    };
+
+    window.handleSearchConversations = function(query) {
+      window.AppState.searchQuery = query;
+      renderConversationCards();
+    };
+
+    function handleIncomingSyncMessage(msg) {
+      if (msg.senderId !== window.AppState.currentUserId) {
+        window.AppState.messages.push(msg);
+        const conv = window.AppState.conversations.find(c => c.id === msg.conversationId);
+        if (conv) {
+          conv.lastMessage = msg.text || 'New message';
+          conv.time = msg.time;
+          if (window.AppState.activeConversationId !== conv.id) {
+            conv.unreadCount = (conv.unreadCount || 0) + 1;
+          }
+        }
+        playChatChime();
+        renderConversationCards();
+        if (window.AppState.activeConversationId === msg.conversationId) {
+          renderMessages();
+        }
+      }
+    }
+
+    function handleIncomingReadSync(data) {
+      const conv = window.AppState.conversations.find(c => c.id === data.conversationId);
+      if (conv) {
+        conv.status = 'read';
+      }
+      window.AppState.messages.forEach(m => {
+        if (m.conversationId === data.conversationId) m.status = 'read';
+      });
+      renderConversationCards();
+      renderMessages();
+    }
+
+    // App Initialization
+    window.addEventListener('DOMContentLoaded', () => {
+      window.updateResponsiveLayout();
+      renderStatusCarousel();
+      renderConversationCards();
+      renderActiveChatHeader();
+      renderMessages();
+    });
+  </script>
+</body>
+</html>
